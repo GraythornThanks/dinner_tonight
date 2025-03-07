@@ -27,54 +27,130 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
     
     return Scaffold(
       appBar: AppBar(
         title: Text(
           '今晚吃什么',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
         ),
-        centerTitle: true,
         actions: [
-          IconButton(
-            icon: Icon(Icons.history),
-            onPressed: () => _navigateToHistory(context),
-            tooltip: '查看历史',
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: IconButton(
+              icon: Icon(Icons.history, size: 28),
+              onPressed: () => _navigateToHistory(context),
+              tooltip: '查看历史',
+            ),
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // 轮盘区域
-          Container(
-            height: size.height * 0.4,
-            padding: EdgeInsets.all(16),
-            child: Consumer<FoodProvider>(
-              builder: (context, provider, child) {
-                return RouletteWheel(
-                  items: provider.foodItems,
-                  isSpinning: provider.isSpinning,
-                  selectedItem: provider.selectedFood,
-                  onSpinComplete: () {
-                    provider.stopSpinning().then((_) {
-                      if (provider.selectedFood != null) {
-                        _showResult(context, provider.selectedFood!);
-                      }
-                    });
-                  },
-                );
-              },
+      body: SafeArea(
+        child: Column(
+          children: [
+            // 轮盘区域
+            Container(
+              height: size.height * 0.4,
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    theme.colorScheme.primary.withOpacity(0.1),
+                    theme.colorScheme.background,
+                  ],
+                ),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
+              ),
+              child: Consumer<FoodProvider>(
+                builder: (context, provider, child) {
+                  return RouletteWheel(
+                    items: provider.foodItems,
+                    isSpinning: provider.isSpinning,
+                    selectedItem: provider.selectedFood,
+                    onSpinComplete: () {
+                      provider.stopSpinning().then((_) {
+                        if (provider.selectedFood != null) {
+                          _showResult(context, provider.selectedFood!);
+                        }
+                      });
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-          
-          // 食品输入表单
-          AddFoodForm(),
-          
-          // 食品列表
-          Expanded(
-            child: FoodList(),
-          ),
-        ],
+            
+            // 食品列表标题
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '食品列表',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                  Consumer<FoodProvider>(
+                    builder: (context, provider, _) {
+                      return Text(
+                        '共 ${provider.foodItems.length} 项',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            
+            // 食品输入表单
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: AddFoodForm(),
+            ),
+            
+            // 食品列表
+            Expanded(
+              child: Container(
+                margin: EdgeInsets.only(top: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: Offset(0, -3),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
+                  ),
+                  child: FoodList(),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: Consumer<FoodProvider>(
         builder: (context, provider, child) {
@@ -85,12 +161,13 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               provider.startSpinning();
             },
-            backgroundColor: Colors.orange,
+            backgroundColor: theme.colorScheme.secondary,
             child: FaIcon(
               FontAwesomeIcons.dice,
               size: 32,
             ),
             tooltip: '开始抽奖',
+            elevation: 8,
           );
         },
       ),

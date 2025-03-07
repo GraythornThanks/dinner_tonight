@@ -87,8 +87,10 @@ class _RouletteWheelState extends State<RouletteWheel>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     if (widget.items.isEmpty) {
-      return _buildEmptyWheel();
+      return _buildEmptyWheel(theme);
     }
     
     return LayoutBuilder(
@@ -97,31 +99,102 @@ class _RouletteWheelState extends State<RouletteWheel>
         return Stack(
           alignment: Alignment.center,
           children: [
-            _buildWheel(size),
-            _buildPointer(size),
+            // 外环装饰
+            Container(
+              width: size * 0.95,
+              height: size * 0.95,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: theme.colorScheme.background,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 15,
+                    spreadRadius: 1,
+                    offset: Offset(0, 5),
+                  ),
+                ],
+              ),
+            ),
+            // 轮盘
+            _buildWheel(size, theme),
+            // 中心点
+            Container(
+              width: size * 0.15,
+              height: size * 0.15,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: theme.colorScheme.primary,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 10,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.restaurant,
+                color: Colors.white,
+                size: size * 0.07,
+              ),
+            ),
+            // 指针
+            _buildPointer(size, theme),
           ],
         );
       },
     );
   }
 
-  Widget _buildEmptyWheel() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Text(
-          '请先添加食品选项',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+  Widget _buildEmptyWheel(ThemeData theme) {
+    return Container(
+      margin: const EdgeInsets.all(32.0),
+      padding: const EdgeInsets.all(20.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 1,
           ),
-          textAlign: TextAlign.center,
-        ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.info_outline,
+            size: 48,
+            color: theme.colorScheme.primary,
+          ),
+          SizedBox(height: 16),
+          Text(
+            '请先添加食品选项',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.primary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 8),
+          Text(
+            '在下方输入框中添加您想要的食品',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildWheel(double size) {
+  Widget _buildWheel(double size, ThemeData theme) {
     final currentAngle = _startAngle + (_finalAngle - _startAngle) * _animation.value;
     
     return Transform.rotate(
@@ -143,24 +216,32 @@ class _RouletteWheelState extends State<RouletteWheel>
         child: CustomPaint(
           painter: RouletteWheelPainter(
             items: widget.items,
+            colorScheme: theme.colorScheme,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildPointer(double size) {
+  Widget _buildPointer(double size, ThemeData theme) {
     return Positioned(
-      top: 0,
+      top: size * 0.02,
       child: Container(
         width: 30,
-        height: 50,
+        height: 40,
         decoration: BoxDecoration(
-          color: Colors.red,
+          color: theme.colorScheme.error,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(15),
             topRight: Radius.circular(15),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 5,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
         child: Icon(
           Icons.arrow_drop_down,
@@ -174,18 +255,23 @@ class _RouletteWheelState extends State<RouletteWheel>
 
 class RouletteWheelPainter extends CustomPainter {
   final List<FoodItem> items;
-  final List<Color> colors = [
-    Colors.red.shade200,
-    Colors.blue.shade200,
-    Colors.green.shade200,
-    Colors.orange.shade200,
-    Colors.purple.shade200,
-    Colors.teal.shade200,
-    Colors.amber.shade200,
-    Colors.cyan.shade200,
-  ];
+  final ColorScheme colorScheme;
+  final List<Color>? colors;
 
-  RouletteWheelPainter({required this.items});
+  RouletteWheelPainter({
+    required this.items, 
+    required this.colorScheme,
+    this.colors,
+  });
+
+  List<Color> get _colors => colors ?? [
+    colorScheme.primary.withOpacity(0.8),
+    colorScheme.secondary.withOpacity(0.8),
+    colorScheme.tertiary.withOpacity(0.8),
+    colorScheme.primary.withOpacity(0.6),
+    colorScheme.secondary.withOpacity(0.6),
+    colorScheme.tertiary.withOpacity(0.6),
+  ];
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -201,7 +287,7 @@ class RouletteWheelPainter extends CustomPainter {
     for (int i = 0; i < items.length; i++) {
       final startAngle = i * sliceAngle;
       final paint = Paint()
-        ..color = colors[i % colors.length]
+        ..color = _colors[i % _colors.length]
         ..style = PaintingStyle.fill;
 
       canvas.drawArc(
@@ -224,6 +310,14 @@ class RouletteWheelPainter extends CustomPainter {
       canvas.drawLine(center, Offset(x, y), linePaint);
     }
     
+    // 绘制轮盘外圈
+    final borderPaint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 4
+      ..style = PaintingStyle.stroke;
+    
+    canvas.drawCircle(center, radius, borderPaint);
+    
     // 绘制文本
     final textPainter = TextPainter(
       textDirection: TextDirection.ltr,
@@ -241,9 +335,16 @@ class RouletteWheelPainter extends CustomPainter {
       textPainter.text = TextSpan(
         text: items[i].name,
         style: TextStyle(
-          color: Colors.black87,
+          color: Colors.white,
           fontSize: 14,
           fontWeight: FontWeight.bold,
+          shadows: [
+            Shadow(
+              color: Colors.black54,
+              blurRadius: 2,
+              offset: Offset(1, 1),
+            ),
+          ],
         ),
       );
       
