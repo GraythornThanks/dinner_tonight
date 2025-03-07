@@ -9,6 +9,7 @@ import '../models/history_record.dart';
 class DatabaseService {
   static final DatabaseService _instance = DatabaseService._internal();
   static Database? _database;
+  static bool _tablesCreated = false;
 
   factory DatabaseService() => _instance;
 
@@ -17,6 +18,13 @@ class DatabaseService {
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDatabase();
+    
+    // 确保表格创建
+    if (!_tablesCreated) {
+      await _ensureTablesCreated(_database!);
+      _tablesCreated = true;
+    }
+    
     return _database!;
   }
 
@@ -27,16 +35,55 @@ class DatabaseService {
       databaseFactory = databaseFactoryFfi;
     }
 
-    Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentsDirectory.path, 'dinner_tonight.db');
-    
-    print('[数据库] 初始化数据库：$path');
+    try {
+      // 在Linux上，我们可能需要创建自定义目录
+      Directory appDirectory;
+      if (Platform.isLinux) {
+        final homeDir = Directory('/home/graythorn');
+        if (await homeDir.exists()) {
+          final appDir = Directory('${homeDir.path}/workplace/dinner_tonight/data');
+          if (!await appDir.exists()) {
+            await appDir.create(recursive: true);
+          }
+          appDirectory = appDir;
+        } else {
+          appDirectory = await getApplicationDocumentsDirectory();
+        }
+      } else {
+        appDirectory = await getApplicationDocumentsDirectory();
+      }
+      
+      String path = join(appDirectory.path, 'dinner_tonight.db');
+      print('[数据库] 初始化数据库：$path');
 
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _onCreate,
+      return await openDatabase(
+        path,
+        version: 1,
+        onCreate: _onCreate,
+      );
+    } catch (e) {
+      print('[数据库] 初始化错误：$e');
+      // 如果出错，使用内存数据库作为后备
+      return await openDatabase(
+        inMemoryDatabasePath,
+        version: 1,
+        onCreate: _onCreate,
+      );
+    }
+  }
+
+  Future<void> _ensureTablesCreated(Database db) async {
+    // 检查表是否已经存在
+    final tables = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='food_items';"
     );
+    
+    if (tables.isEmpty) {
+      print('[数据库] 表不存在，正在创建...');
+      await _onCreate(db, 1);
+    } else {
+      print('[数据库] 表已存在');
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -44,7 +91,7 @@ class DatabaseService {
     
     // 创建食品表
     await db.execute('''
-      CREATE TABLE food_items(
+      CREATE TABLE IF NOT EXISTS food_items(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         created_at TEXT NOT NULL
@@ -53,7 +100,7 @@ class DatabaseService {
 
     // 创建历史记录表
     await db.execute('''
-      CREATE TABLE history_records(
+      CREATE TABLE IF NOT EXISTS history_records(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         food_name TEXT NOT NULL,
         timestamp TEXT NOT NULL
