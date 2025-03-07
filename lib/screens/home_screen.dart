@@ -50,102 +50,124 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            // 轮盘区域
-            Container(
-              height: size.height * 0.4,
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    theme.colorScheme.primary.withOpacity(0.1),
-                    theme.colorScheme.background,
-                  ],
+            // 主体内容
+            Column(
+              children: [
+                // 轮盘区域占位
+                SizedBox(
+                  height: size.height * 0.4,
                 ),
+                
+                // 食品列表标题
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '食品列表',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      Consumer<FoodProvider>(
+                        builder: (context, provider, _) {
+                          return Text(
+                            '共 ${provider.foodItems.length} 项',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // 食品输入表单
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: AddFoodForm(),
+                ),
+                
+                // 食品列表
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.only(top: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: Offset(0, -3),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
+                      child: FoodList(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            
+            // 轮盘区域 - 在Stack顶层
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Material(
+                elevation: 4,
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(30),
                   bottomRight: Radius.circular(30),
                 ),
-              ),
-              child: Consumer<FoodProvider>(
-                builder: (context, provider, child) {
-                  return RouletteWheel(
-                    items: provider.foodItems,
-                    isSpinning: provider.isSpinning,
-                    selectedItem: provider.selectedFood,
-                    onSpinComplete: () {
-                      provider.stopSpinning().then((_) {
-                        if (provider.selectedFood != null) {
-                          _showResult(context, provider.selectedFood!);
-                        }
-                      });
-                    },
-                  );
-                },
-              ),
-            ),
-            
-            // 食品列表标题
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '食品列表',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
+                child: Container(
+                  height: size.height * 0.4,
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        theme.colorScheme.primary.withOpacity(0.1),
+                        theme.colorScheme.background,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30),
                     ),
                   ),
-                  Consumer<FoodProvider>(
-                    builder: (context, provider, _) {
-                      return Text(
-                        '共 ${provider.foodItems.length} 项',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
-                        ),
+                  child: Consumer<FoodProvider>(
+                    builder: (context, provider, child) {
+                      return RouletteWheel(
+                        items: provider.foodItems,
+                        isSpinning: provider.isSpinning,
+                        selectedItem: provider.selectedFood,
+                        onSpinComplete: () {
+                          provider.stopSpinning().then((_) {
+                            if (provider.selectedFood != null) {
+                              _showResult(context, provider.selectedFood!);
+                            }
+                          });
+                        },
                       );
                     },
                   ),
-                ],
-              ),
-            ),
-            
-            // 食品输入表单
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: AddFoodForm(),
-            ),
-            
-            // 食品列表
-            Expanded(
-              child: Container(
-                margin: EdgeInsets.only(top: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: Offset(0, -3),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
-                  child: FoodList(),
                 ),
               ),
             ),
