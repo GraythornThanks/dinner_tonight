@@ -149,8 +149,8 @@ class _RouletteWheelState extends State<RouletteWheel>
 
   Widget _buildEmptyWheel(ThemeData theme) {
     return Container(
-      margin: const EdgeInsets.all(32.0),
-      padding: const EdgeInsets.all(20.0),
+      margin: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
+      padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -164,28 +164,20 @@ class _RouletteWheelState extends State<RouletteWheel>
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.info_outline,
-            size: 48,
+            size: 36,
             color: theme.colorScheme.primary,
-          ),
-          SizedBox(height: 16),
-          Text(
-            '请先添加食品选项',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.primary,
-            ),
-            textAlign: TextAlign.center,
           ),
           SizedBox(height: 8),
           Text(
-            '在下方输入框中添加您想要的食品',
+            '请先添加食品选项',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[600],
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.primary,
             ),
             textAlign: TextAlign.center,
           ),
@@ -199,25 +191,11 @@ class _RouletteWheelState extends State<RouletteWheel>
     
     return Transform.rotate(
       angle: currentAngle,
-      child: Container(
-        width: size * 0.9,
-        height: size * 0.9,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 10,
-              offset: Offset(0, 5),
-            ),
-          ],
-        ),
-        child: CustomPaint(
-          painter: RouletteWheelPainter(
-            items: widget.items,
-            colorScheme: theme.colorScheme,
-          ),
+      child: CustomPaint(
+        size: Size(size * 0.95, size * 0.95),
+        painter: RouletteWheelPainter(
+          items: widget.items,
+          theme: theme,
         ),
       ),
     );
@@ -225,28 +203,24 @@ class _RouletteWheelState extends State<RouletteWheel>
 
   Widget _buildPointer(double size, ThemeData theme) {
     return Positioned(
-      top: size * 0.02,
+      top: 0,
       child: Container(
-        width: 30,
-        height: 40,
-        decoration: BoxDecoration(
-          color: theme.colorScheme.error,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(15),
-            topRight: Radius.circular(15),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 5,
-              offset: Offset(0, 2),
+        width: size * 0.15,
+        height: size * 0.12,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Icon(
+                Icons.arrow_drop_down,
+                color: theme.colorScheme.secondary,
+                size: size * 0.15,
+              ),
             ),
           ],
-        ),
-        child: Icon(
-          Icons.arrow_drop_down,
-          color: Colors.white,
-          size: 30,
         ),
       ),
     );
@@ -255,22 +229,22 @@ class _RouletteWheelState extends State<RouletteWheel>
 
 class RouletteWheelPainter extends CustomPainter {
   final List<FoodItem> items;
-  final ColorScheme colorScheme;
+  final ThemeData theme;
   final List<Color>? colors;
 
   RouletteWheelPainter({
     required this.items, 
-    required this.colorScheme,
+    required this.theme,
     this.colors,
   });
 
   List<Color> get _colors => colors ?? [
-    colorScheme.primary.withOpacity(0.8),
-    colorScheme.secondary.withOpacity(0.8),
-    colorScheme.tertiary.withOpacity(0.8),
-    colorScheme.primary.withOpacity(0.6),
-    colorScheme.secondary.withOpacity(0.6),
-    colorScheme.tertiary.withOpacity(0.6),
+    theme.colorScheme.primary.withOpacity(0.8),
+    theme.colorScheme.secondary.withOpacity(0.8),
+    theme.colorScheme.tertiary.withOpacity(0.8),
+    theme.colorScheme.primary.withOpacity(0.6),
+    theme.colorScheme.secondary.withOpacity(0.6),
+    theme.colorScheme.tertiary.withOpacity(0.6),
   ];
 
   @override
