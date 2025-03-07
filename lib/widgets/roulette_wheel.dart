@@ -88,21 +88,23 @@ class _RouletteWheelState extends State<RouletteWheel>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isSmallScreen = MediaQuery.of(context).size.height < 700;
     
     if (widget.items.isEmpty) {
-      return _buildEmptyWheel(theme);
+      return _buildEmptyWheel(theme, isSmallScreen);
     }
     
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = constraints.maxWidth;
+        final scaleFactor = isSmallScreen ? 0.9 : 0.95; // 在小屏幕上稍微缩小轮盘
         return Stack(
           alignment: Alignment.center,
           children: [
             // 外环装饰
             Container(
-              width: size * 0.95,
-              height: size * 0.95,
+              width: size * scaleFactor,
+              height: size * scaleFactor,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: theme.colorScheme.background,
@@ -117,11 +119,11 @@ class _RouletteWheelState extends State<RouletteWheel>
               ),
             ),
             // 轮盘
-            _buildWheel(size, theme),
+            _buildWheel(size * scaleFactor, theme, isSmallScreen),
             // 中心点
             Container(
-              width: size * 0.15,
-              height: size * 0.15,
+              width: size * (isSmallScreen ? 0.12 : 0.15),
+              height: size * (isSmallScreen ? 0.12 : 0.15),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: theme.colorScheme.primary,
@@ -136,21 +138,21 @@ class _RouletteWheelState extends State<RouletteWheel>
               child: Icon(
                 Icons.restaurant,
                 color: Colors.white,
-                size: size * 0.07,
+                size: size * (isSmallScreen ? 0.05 : 0.07),
               ),
             ),
             // 指针
-            _buildPointer(size, theme),
+            _buildPointer(size, theme, isSmallScreen),
           ],
         );
       },
     );
   }
 
-  Widget _buildEmptyWheel(ThemeData theme) {
+  Widget _buildEmptyWheel(ThemeData theme, bool isSmallScreen) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
-      padding: const EdgeInsets.all(12.0),
+      margin: EdgeInsets.all(isSmallScreen ? 20.0 : 32.0),
+      padding: EdgeInsets.all(isSmallScreen ? 16.0 : 20.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -164,20 +166,28 @@ class _RouletteWheelState extends State<RouletteWheel>
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.info_outline,
-            size: 36,
+            size: isSmallScreen ? 40 : 48,
             color: theme.colorScheme.primary,
           ),
-          SizedBox(height: 8),
+          SizedBox(height: isSmallScreen ? 12 : 16),
           Text(
             '请先添加食品选项',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: isSmallScreen ? 18 : 20,
               fontWeight: FontWeight.bold,
               color: theme.colorScheme.primary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: isSmallScreen ? 6 : 8),
+          Text(
+            '在下方输入框中添加您想要的食品',
+            style: TextStyle(
+              fontSize: isSmallScreen ? 14 : 16,
+              color: Colors.grey[600],
             ),
             textAlign: TextAlign.center,
           ),
@@ -186,41 +196,60 @@ class _RouletteWheelState extends State<RouletteWheel>
     );
   }
 
-  Widget _buildWheel(double size, ThemeData theme) {
+  Widget _buildWheel(double size, ThemeData theme, bool isSmallScreen) {
     final currentAngle = _startAngle + (_finalAngle - _startAngle) * _animation.value;
     
     return Transform.rotate(
       angle: currentAngle,
-      child: CustomPaint(
-        size: Size(size * 0.95, size * 0.95),
-        painter: RouletteWheelPainter(
-          items: widget.items,
-          theme: theme,
+      child: Container(
+        width: size * (isSmallScreen ? 0.95 : 0.9),
+        height: size * (isSmallScreen ? 0.95 : 0.9),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 10,
+              offset: Offset(0, 5),
+            ),
+          ],
+        ),
+        child: CustomPaint(
+          painter: RouletteWheelPainter(
+            items: widget.items,
+            colorScheme: theme.colorScheme,
+            isSmallScreen: isSmallScreen,
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildPointer(double size, ThemeData theme) {
+  Widget _buildPointer(double size, ThemeData theme, bool isSmallScreen) {
     return Positioned(
-      top: 0,
+      top: size * (isSmallScreen ? 0.01 : 0.02),
       child: Container(
-        width: size * 0.15,
-        height: size * 0.12,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: Icon(
-                Icons.arrow_drop_down,
-                color: theme.colorScheme.secondary,
-                size: size * 0.15,
-              ),
+        width: isSmallScreen ? 24 : 30,
+        height: isSmallScreen ? 32 : 40,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.error,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(isSmallScreen ? 12 : 15),
+            topRight: Radius.circular(isSmallScreen ? 12 : 15),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 5,
+              offset: Offset(0, 2),
             ),
           ],
+        ),
+        child: Icon(
+          Icons.arrow_drop_down,
+          color: Colors.white,
+          size: isSmallScreen ? 24 : 30,
         ),
       ),
     );
@@ -229,22 +258,24 @@ class _RouletteWheelState extends State<RouletteWheel>
 
 class RouletteWheelPainter extends CustomPainter {
   final List<FoodItem> items;
-  final ThemeData theme;
+  final ColorScheme colorScheme;
   final List<Color>? colors;
+  final bool isSmallScreen;
 
   RouletteWheelPainter({
     required this.items, 
-    required this.theme,
+    required this.colorScheme,
     this.colors,
+    this.isSmallScreen = false,
   });
 
   List<Color> get _colors => colors ?? [
-    theme.colorScheme.primary.withOpacity(0.8),
-    theme.colorScheme.secondary.withOpacity(0.8),
-    theme.colorScheme.tertiary.withOpacity(0.8),
-    theme.colorScheme.primary.withOpacity(0.6),
-    theme.colorScheme.secondary.withOpacity(0.6),
-    theme.colorScheme.tertiary.withOpacity(0.6),
+    colorScheme.primary.withOpacity(0.8),
+    colorScheme.secondary.withOpacity(0.8),
+    colorScheme.tertiary.withOpacity(0.8),
+    colorScheme.primary.withOpacity(0.6),
+    colorScheme.secondary.withOpacity(0.6),
+    colorScheme.tertiary.withOpacity(0.6),
   ];
 
   @override
@@ -302,15 +333,24 @@ class RouletteWheelPainter extends CustomPainter {
       final midSliceAngle = (i * sliceAngle) + (sliceAngle / 2);
       
       // 调整文本位置，使文本能够正常显示
-      final textRadius = radius * 0.7; // 文字位置在半径的70%处
+      final textRadius = radius * (isSmallScreen ? 0.65 : 0.7); // 文字位置在半径的70%处
       final x = center.dx + textRadius * cos(midSliceAngle);
       final y = center.dy + textRadius * sin(midSliceAngle);
+      
+      // 根据食品名称长度适配字体大小
+      double fontSize = isSmallScreen ? 12 : 14;
+      if (items[i].name.length > 5) {
+        fontSize = isSmallScreen ? 10 : 12;
+      }
+      if (items[i].name.length > 8) {
+        fontSize = isSmallScreen ? 8 : 10;
+      }
 
       textPainter.text = TextSpan(
         text: items[i].name,
         style: TextStyle(
           color: Colors.white,
-          fontSize: 14,
+          fontSize: fontSize,
           fontWeight: FontWeight.bold,
           shadows: [
             Shadow(

@@ -90,4 +90,24 @@ class FoodProvider with ChangeNotifier {
     await _dbService.deleteAllHistoryRecords();
     await loadHistoryRecords();
   }
+
+  // 添加特定食品到历史记录
+  Future<void> addHistoryRecord(FoodItem foodItem) async {
+    await _dbService.insertHistoryRecord(
+      HistoryRecord(foodName: foodItem.name)
+    );
+    await loadHistoryRecords();
+  }
+
+  // 删除单条历史记录
+  Future<void> deleteHistoryRecord(int id) async {
+    await _dbService.deleteHistoryRecord(id);
+    await loadHistoryRecords();
+  }
+
+  // 恢复历史记录
+  Future<void> restoreHistoryRecord(HistoryRecord record) async {
+    await _dbService.insertHistoryRecord(record);
+    await loadHistoryRecords();
+  }
 }

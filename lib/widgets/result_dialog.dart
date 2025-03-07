@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/food_item.dart';
 import '../services/food_provider.dart';
-import 'package:lottie/lottie.dart';
 
-class ResultDialog extends StatefulWidget {
+class ResultDialog extends StatelessWidget {
   final FoodItem selectedFood;
 
   const ResultDialog({
@@ -13,179 +12,190 @@ class ResultDialog extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<ResultDialog> createState() => _ResultDialogState();
-}
-
-class _ResultDialogState extends State<ResultDialog>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-
-    _scaleAnimation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.elasticOut,
-    );
-
-    _controller.forward();
-
-    // 结果已经在FoodProvider.stopSpinning()方法中添加到了历史记录，这里不需要额外添加
-    // 只需要通知用户选择了什么食品
-    print("[结果] 显示选中的食品: ${widget.selectedFood.name}");
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final size = MediaQuery.of(context).size;
+    final isSmallScreen = MediaQuery.of(context).size.height < 700;
     
-    return ScaleTransition(
-      scale: _scaleAnimation,
-      child: AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
+    // 添加成功音效
+    // 注意：在实际应用中可以使用audioplayers或just_audio包添加音效
+    
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      elevation: 8,
+      backgroundColor: Colors.transparent,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.zero,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 10,
+              offset: Offset(0, 5),
+            ),
+          ],
         ),
-        contentPadding: EdgeInsets.zero,
-        content: Container(
-          width: size.width * 0.8,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 顶部背景和标题
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                    topRight: Radius.circular(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 头部背景
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(
+                vertical: isSmallScreen ? 16 : 24, 
+                horizontal: 0
+              ),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.restaurant,
+                    color: Colors.white,
+                    size: isSmallScreen ? 48 : 64,
                   ),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      '今晚吃什么',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  SizedBox(height: isSmallScreen ? 8 : 16),
+                  Text(
+                    '抽奖结果',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isSmallScreen ? 18 : 22,
+                      fontWeight: FontWeight.bold,
                     ),
-                    SizedBox(height: 8),
-                    Text(
-                      '抽奖结果',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              
-              // 动画和结果
-              Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  children: [
-                    // 动画
-                    SizedBox(
-                      height: 120,
-                      child: Lottie.network(
-                        'https://assets3.lottiefiles.com/packages/lf20_jbrw3hcz.json',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    // 结果
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        vertical: 12,
-                        horizontal: 24,
-                      ),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: theme.colorScheme.primary.withOpacity(0.3),
-                          width: 2,
-                        ),
-                      ),
-                      child: Text(
-                        widget.selectedFood.name,
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.primary,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      '恭喜！今晚的晚餐已经决定',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
+            ),
+            
+            // 内容区域
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(
+                vertical: isSmallScreen ? 16 : 24, 
+                horizontal: isSmallScreen ? 16 : 24
               ),
-              
-              // 按钮
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 24,
-                  right: 24,
-                  bottom: 24,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
+              child: Column(
+                children: [
+                  Text(
+                    '今晚吃',
+                    style: TextStyle(
+                      fontSize: isSmallScreen ? 14 : 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  SizedBox(height: isSmallScreen ? 8 : 16),
+                  Text(
+                    selectedFood.name,
+                    style: TextStyle(
+                      fontSize: isSmallScreen ? 24 : 32,
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: isSmallScreen ? 20 : 30),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildActionButton(
+                        context,
+                        '重新抽奖',
+                        Icons.refresh,
+                        theme.colorScheme.secondary,
+                        isSmallScreen,
                         onPressed: () {
                           Navigator.of(context).pop();
+                          _startNewSpin(context);
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: theme.colorScheme.secondary,
-                          padding: EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          '确定',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
                       ),
-                    ),
-                  ],
-                ),
+                      _buildActionButton(
+                        context,
+                        '确认',
+                        Icons.check_circle_outline,
+                        theme.colorScheme.primary,
+                        isSmallScreen,
+                        onPressed: () {
+                          _saveResult(context);
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton(
+    BuildContext context,
+    String label,
+    IconData icon,
+    Color color,
+    bool isSmallScreen,
+    {required VoidCallback onPressed}
+  ) {
+    return ElevatedButton.icon(
+      icon: Icon(
+        icon,
+        size: isSmallScreen ? 18 : 22,
+      ),
+      label: Text(
+        label,
+        style: TextStyle(
+          fontSize: isSmallScreen ? 12 : 14,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        foregroundColor: Colors.white,
+        elevation: 2,
+        padding: EdgeInsets.symmetric(
+          horizontal: isSmallScreen ? 12 : 16, 
+          vertical: isSmallScreen ? 8 : 12
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
+
+  void _startNewSpin(BuildContext context) {
+    final provider = Provider.of<FoodProvider>(context, listen: false);
+    provider.startSpinning();
+  }
+
+  void _saveResult(BuildContext context) {
+    final provider = Provider.of<FoodProvider>(context, listen: false);
+    provider.addHistoryRecord(selectedFood);
+    
+    // 显示保存成功的提示
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('已保存到历史记录'),
+        backgroundColor: Theme.of(context).colorScheme.secondary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        margin: EdgeInsets.fromLTRB(10, 0, 10, 10),
+        duration: Duration(seconds: 2),
       ),
     );
   }

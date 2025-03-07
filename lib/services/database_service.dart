@@ -154,4 +154,15 @@ class DatabaseService {
     print('[数据库] 清空历史记录');
     return await db.delete('history_records');
   }
+
+  // 删除单条历史记录
+  Future<int> deleteHistoryRecord(int id) async {
+    Database db = await database;
+    print('[数据库] 删除历史记录ID：$id');
+    return await db.delete(
+      'history_records',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
 }
