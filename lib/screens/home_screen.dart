@@ -50,150 +50,167 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: SafeArea(
-        child: Stack(
-          children: [
-            // 主体内容
-            Column(
-              children: [
-                // 轮盘区域占位
-                SizedBox(
-                  height: size.height * 0.4,
-                ),
-                
-                // 食品列表标题
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '食品列表',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                      Consumer<FoodProvider>(
-                        builder: (context, provider, _) {
-                          return Text(
-                            '共 ${provider.foodItems.length} 项',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            children: [
+              // 主内容区域 - 轮盘和食品列表在同一层
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 轮盘区域
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              theme.colorScheme.primary.withOpacity(0.1),
+                              theme.colorScheme.background,
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 8,
+                              offset: Offset(0, 2),
                             ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                
-                // 食品输入表单
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: AddFoodForm(),
-                ),
-                
-                // 食品列表
-                Expanded(
-                  child: Container(
-                    margin: EdgeInsets.only(top: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(30),
-                        topRight: Radius.circular(30),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: Offset(0, -3),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(30),
-                        topRight: Radius.circular(30),
+                        child: Column(
+                          children: [
+                            Text(
+                              '食品轮盘',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                            SizedBox(height: 12),
+                            Expanded(
+                              child: Consumer<FoodProvider>(
+                                builder: (context, provider, child) {
+                                  return RouletteWheel(
+                                    items: provider.foodItems,
+                                    isSpinning: provider.isSpinning,
+                                    selectedItem: provider.selectedFood,
+                                    onSpinComplete: () {
+                                      provider.stopSpinning().then((_) {
+                                        if (provider.selectedFood != null) {
+                                          _showResult(context, provider.selectedFood!);
+                                        }
+                                      });
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Consumer<FoodProvider>(
+                              builder: (context, provider, child) {
+                                if (provider.foodItems.isEmpty || provider.isSpinning) {
+                                  return SizedBox.shrink();
+                                }
+                                return ElevatedButton.icon(
+                                  onPressed: () {
+                                    provider.startSpinning();
+                                  },
+                                  icon: FaIcon(
+                                    FontAwesomeIcons.dice,
+                                    size: 18,
+                                  ),
+                                  label: Text('开始抽奖'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: theme.colorScheme.secondary,
+                                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                      child: FoodList(),
                     ),
-                  ),
-                ),
-              ],
-            ),
-            
-            // 轮盘区域 - 在Stack顶层
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: Material(
-                elevation: 4,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
-                child: Container(
-                  height: size.height * 0.4,
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        theme.colorScheme.primary.withOpacity(0.1),
-                        theme.colorScheme.background,
-                      ],
+                    
+                    SizedBox(width: 16),
+                    
+                    // 食品列表区域
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 8,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            // 食品列表标题
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    '食品列表',
+                                    style: theme.textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  ),
+                                  Consumer<FoodProvider>(
+                                    builder: (context, provider, _) {
+                                      return Text(
+                                        '共 ${provider.foodItems.length} 项',
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            
+                            // 食品输入表单
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: AddFoodForm(),
+                            ),
+                            
+                            // 食品列表
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(24),
+                                  bottomRight: Radius.circular(24),
+                                ),
+                                child: FoodList(),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(30),
-                      bottomRight: Radius.circular(30),
-                    ),
-                  ),
-                  child: Consumer<FoodProvider>(
-                    builder: (context, provider, child) {
-                      return RouletteWheel(
-                        items: provider.foodItems,
-                        isSpinning: provider.isSpinning,
-                        selectedItem: provider.selectedFood,
-                        onSpinComplete: () {
-                          provider.stopSpinning().then((_) {
-                            if (provider.selectedFood != null) {
-                              _showResult(context, provider.selectedFood!);
-                            }
-                          });
-                        },
-                      );
-                    },
-                  ),
+                  ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-      floatingActionButton: Consumer<FoodProvider>(
-        builder: (context, provider, child) {
-          if (provider.foodItems.isEmpty || provider.isSpinning) {
-            return SizedBox.shrink();
-          }
-          return FloatingActionButton.large(
-            onPressed: () {
-              provider.startSpinning();
-            },
-            backgroundColor: theme.colorScheme.secondary,
-            child: FaIcon(
-              FontAwesomeIcons.dice,
-              size: 32,
-            ),
-            tooltip: '开始抽奖',
-            elevation: 8,
-          );
-        },
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
