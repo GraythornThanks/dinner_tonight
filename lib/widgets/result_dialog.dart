@@ -36,11 +36,9 @@ class _ResultDialogState extends State<ResultDialog>
 
     _controller.forward();
 
-    // 在对话框显示后将结果添加到历史记录
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<FoodProvider>(context, listen: false)
-          .addToHistory(widget.selectedFood);
-    });
+    // 结果已经在FoodProvider.stopSpinning()方法中添加到了历史记录，这里不需要额外添加
+    // 只需要通知用户选择了什么食品
+    print("[结果] 显示选中的食品: ${widget.selectedFood.name}");
   }
 
   @override

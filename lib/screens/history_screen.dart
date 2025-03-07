@@ -17,7 +17,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     super.initState();
     // 加载历史记录
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<FoodProvider>(context, listen: false).loadHistory();
+      Provider.of<FoodProvider>(context, listen: false).loadHistoryRecords();
     });
   }
 

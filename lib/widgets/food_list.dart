@@ -23,7 +23,7 @@ class FoodList extends StatelessWidget {
             return FoodItemTile(
               foodItem: provider.foodItems[index],
               onDelete: () {
-                provider.removeFood(provider.foodItems[index].id!);
+                provider.deleteFoodItem(provider.foodItems[index].id!);
               },
             );
           },
@@ -111,7 +111,7 @@ class FoodItemTile extends StatelessWidget {
               textColor: Colors.white,
               onPressed: () {
                 Provider.of<FoodProvider>(context, listen: false)
-                    .addFood(foodItem.name);
+                    .addFoodItem(foodItem.name);
               },
             ),
           ),
@@ -243,7 +243,7 @@ class _AddFoodFormState extends State<AddFoodForm> {
     if (_formKey.currentState!.validate()) {
       final foodName = _textController.text.trim();
       if (foodName.isNotEmpty) {
-        Provider.of<FoodProvider>(context, listen: false).addFood(foodName);
+        Provider.of<FoodProvider>(context, listen: false).addFoodItem(foodName);
         _textController.clear();
       }
     }
