@@ -195,24 +195,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   provider.startSpinning();
                 },
                 backgroundColor: theme.colorScheme.primary,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    FaIcon(
-                      FontAwesomeIcons.dice,
-                      size: isSmallScreen ? 40 : 48,
-                      color: Colors.white,
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      "抽奖",
-                      style: TextStyle(
-                        fontSize: isSmallScreen ? 16 : 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
+                child: FaIcon(
+                  FontAwesomeIcons.dice,
+                  size: isSmallScreen ? 48 : 56,
+                  color: Colors.white,
                 ),
                 tooltip: '开始抽奖',
                 elevation: 6,
