@@ -72,16 +72,6 @@ class FoodProvider with ChangeNotifier {
     
     print('[轮盘] 停止旋转，选中：${_selectedFood?.name ?? "无"}');
     
-    // 添加到历史记录
-    if (_selectedFood != null) {
-      await _dbService.insertHistoryRecord(
-        HistoryRecord(foodName: _selectedFood!.name)
-      );
-    }
-    
-    // 更新历史记录列表
-    await loadHistoryRecords();
-    
     notifyListeners();
   }
 
