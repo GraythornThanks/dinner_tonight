@@ -62,22 +62,22 @@ class FoodProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // 停止旋转并随机选择食品
-  Future<void> stopSpinning() async {
+  // 停止旋转并设置选中的食品
+  Future<void> stopSpinning(FoodItem? selectedFood) async {
     if (_foodItems.isEmpty) return;
 
-    // 随机选择一个食品
-    final random = Random();
-    final index = random.nextInt(_foodItems.length);
-    _selectedFood = _foodItems[index];
+    // 设置由轮盘指针选中的食品
+    _selectedFood = selectedFood;
     _isSpinning = false;
     
-    print('[轮盘] 停止旋转，选中：${_selectedFood!.name}');
+    print('[轮盘] 停止旋转，选中：${_selectedFood?.name ?? "无"}');
     
     // 添加到历史记录
-    await _dbService.insertHistoryRecord(
-      HistoryRecord(foodName: _selectedFood!.name)
-    );
+    if (_selectedFood != null) {
+      await _dbService.insertHistoryRecord(
+        HistoryRecord(foodName: _selectedFood!.name)
+      );
+    }
     
     // 更新历史记录列表
     await loadHistoryRecords();

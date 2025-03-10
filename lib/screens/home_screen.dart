@@ -83,12 +83,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       items: provider.foodItems,
                       isSpinning: provider.isSpinning,
                       selectedItem: provider.selectedFood,
-                      onSpinComplete: () {
-                        provider.stopSpinning().then((_) {
-                          if (provider.selectedFood != null) {
-                            _showResult(context, provider.selectedFood!);
-                          }
-                        });
+                      onSpinComplete: (selectedFood) {
+                        if (selectedFood != null) {
+                          provider.stopSpinning(selectedFood).then((_) {
+                            _showResult(context, selectedFood);
+                          });
+                        } else {
+                          provider.stopSpinning(null);
+                        }
                       },
                     );
                   },

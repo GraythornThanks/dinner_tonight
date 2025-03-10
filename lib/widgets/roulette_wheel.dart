@@ -6,7 +6,7 @@ class RouletteWheel extends StatefulWidget {
   final List<FoodItem> items;
   final bool isSpinning;
   final FoodItem? selectedItem;
-  final Function() onSpinComplete;
+  final Function(FoodItem?) onSpinComplete;
 
   const RouletteWheel({
     Key? key,
@@ -28,6 +28,7 @@ class _RouletteWheelState extends State<RouletteWheel>
   final Duration _spinDuration = const Duration(seconds: 3);
   double _finalAngle = 0;
   double _startAngle = 0;
+  int _selectedIndex = -1; // 记录选中的索引
 
   @override
   void initState() {
@@ -75,8 +76,35 @@ class _RouletteWheelState extends State<RouletteWheel>
   void _handleAnimationStatus(AnimationStatus status) {
     if (status == AnimationStatus.completed) {
       print('[轮盘] 旋转完成');
-      widget.onSpinComplete();
+      // 计算选中的食品索引
+      _selectedIndex = _getSelectedFoodIndex();
+      print('[轮盘] 指针指向的食品索引: $_selectedIndex，名称: ${widget.items[_selectedIndex].name}');
+      widget.onSpinComplete(widget.items[_selectedIndex]);
     }
+  }
+
+  // 根据最终旋转角度计算指针指向的食品
+  int _getSelectedFoodIndex() {
+    if (widget.items.isEmpty) return -1;
+    
+    // 计算归一化角度（将角度限制在0到2π之间）
+    final normalizedFinalAngle = _finalAngle % (2 * pi);
+    
+    // 计算指针指向的角度
+    // 由于指针固定在顶部(-pi/2位置)，轮盘旋转，所以我们需要计算哪个扇区旋转到了指针下方
+    // 指针位置(_baseAngle) - 轮盘旋转角度(normalizedFinalAngle) + 偏移修正(pi*2)，然后取模防止负值
+    final pointerAngle = (_baseAngle - normalizedFinalAngle + pi * 2) % (2 * pi);
+    
+    // 计算每个扇区的角度
+    final sliceAngle = 2 * pi / widget.items.length;
+    
+    // 计算指针指向的扇区索引
+    int selectedIndex = (pointerAngle / sliceAngle).floor();
+    
+    // 确保索引在有效范围内
+    selectedIndex = selectedIndex % widget.items.length;
+    
+    return selectedIndex;
   }
 
   @override
