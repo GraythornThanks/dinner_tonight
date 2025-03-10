@@ -185,21 +185,46 @@ class _HomeScreenState extends State<HomeScreen> {
           if (provider.foodItems.isEmpty || provider.isSpinning) {
             return SizedBox.shrink();
           }
-          return FloatingActionButton(
-            onPressed: () {
-              provider.startSpinning();
-            },
-            backgroundColor: theme.colorScheme.secondary,
-            child: FaIcon(
-              FontAwesomeIcons.dice,
-              size: isSmallScreen ? 24 : 28,
+          return Container(
+            margin: EdgeInsets.only(bottom: isSmallScreen ? 16 : 24),
+            child: SizedBox(
+              width: isSmallScreen ? 100 : 120,
+              height: isSmallScreen ? 100 : 120,
+              child: FloatingActionButton(
+                onPressed: () {
+                  provider.startSpinning();
+                },
+                backgroundColor: theme.colorScheme.primary,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    FaIcon(
+                      FontAwesomeIcons.dice,
+                      size: isSmallScreen ? 40 : 48,
+                      color: Colors.white,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      "抽奖",
+                      style: TextStyle(
+                        fontSize: isSmallScreen ? 16 : 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+                tooltip: '开始抽奖',
+                elevation: 6,
+                shape: CircleBorder(
+                  side: BorderSide(color: Colors.white, width: 2),
+                ),
+              ),
             ),
-            tooltip: '开始抽奖',
-            elevation: 4,
           );
         },
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
