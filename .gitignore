@@ -45,3 +45,18 @@ app.*.map.json
 /android/app/release
 
 .windsurfrules
+
+# 数据库文件
+/data/dinner_tonight.db
+
+# 附加的Flutter文件
+/linux/flutter/ephemeral/
+/android/.gradle/
+**/*.so
+**/*.bin
+**/.build/
+**/.last_build_id
+**/ios/Flutter/ephemeral/
+**/ios/Pods/
+**/macos/Pods/
+**/Generated.xcconfig
