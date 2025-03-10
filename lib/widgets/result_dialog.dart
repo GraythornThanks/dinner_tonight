@@ -113,6 +113,7 @@ class ResultDialog extends StatelessWidget {
                         Icons.refresh,
                         theme.colorScheme.secondary,
                         isSmallScreen,
+                        iconColor: Colors.amber,
                         onPressed: () {
                           Navigator.of(context).pop();
                           _startNewSpin(context);
@@ -124,6 +125,7 @@ class ResultDialog extends StatelessWidget {
                         Icons.check_circle_outline,
                         theme.colorScheme.primary,
                         isSmallScreen,
+                        iconColor: Colors.greenAccent,
                         onPressed: () {
                           _saveResult(context);
                           Navigator.of(context).pop();
@@ -146,7 +148,7 @@ class ResultDialog extends StatelessWidget {
     IconData icon,
     Color color,
     bool isSmallScreen,
-    {required VoidCallback onPressed}
+    {required VoidCallback onPressed, Color iconColor = Colors.white}
   ) {
     return ElevatedButton.icon(
       icon: Icon(
@@ -163,7 +165,8 @@ class ResultDialog extends StatelessWidget {
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
-        foregroundColor: Colors.white,
+        foregroundColor: Colors.white, // 文字颜色
+        iconColor: iconColor, // 图标颜色
         elevation: 2,
         padding: EdgeInsets.symmetric(
           horizontal: isSmallScreen ? 12 : 16, 
